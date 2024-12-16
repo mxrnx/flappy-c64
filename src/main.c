@@ -12,16 +12,9 @@ extern void setBackgroundColor(const unsigned char color);
 
 const unsigned char KEY_PRESS_MAX = 60;
 const unsigned char KEY_PRESS_MIN = 20;
-const unsigned int PIPE_MAX_X = 400;
+const unsigned int PIPE_MAX_X = 401;
 
-void updatePipeX(const unsigned int *pipe_x) {
-	if (pipe_x > 0)
-		--pipe_x;
-	else
-		pipe_x = PIPE_MAX_X;
-}
-
-int main(void) {
+void game(void) {
 	unsigned char key;
 	unsigned int pipe_a_x = PIPE_MAX_X;
 	unsigned int pipe_b_x = PIPE_MAX_X + 200;
@@ -29,12 +22,13 @@ int main(void) {
 	unsigned char frames = 0;
 	unsigned char keyPress = 0;
 
-	clearScreen();
 	setFrameColor(COLOR_ORANGE);
 	setBackgroundColor(COLOR_LIGHTBLUE);
 
 	// Setup sprites
 	setupSprites(bird_y, pipe_a_x, pipe_b_x);
+
+	VIC.spr_coll = 0;
 
 	// Infinite loop
 	while (1)
@@ -64,6 +58,7 @@ int main(void) {
 			++bird_y;
 		}
 
+		// TODO: refactor
 		if (pipe_a_x > 0)
 			--pipe_a_x;
 		else
@@ -85,9 +80,15 @@ int main(void) {
 	setFrameColor(COLOR_BLACK);
 	setBackgroundColor(COLOR_RED);
 
-	while (1) {}
+	key = cgetc(); // Wait for user to press a key
+}
 
-	return 0;
+void main(void) {
+	clearScreen();
+
+	while (1) {
+		game();
+	}
 }
 
 // up	left	down	right	space

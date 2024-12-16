@@ -42,23 +42,9 @@ void moveSprite(const unsigned char sprite, unsigned int x, unsigned char y) {
 	VIC.spr_pos[sprite].y = y;
 }
 
-void setupBirdSprite(const unsigned int bird_y) {
-	setupSprite(BIRD_SPRITE_NUM, COLOR_YELLOW, BIRD_SPRITE_DATA);
-	moveSprite(BIRD_SPRITE_NUM, BIRD_X, bird_y);
-}
-
-void setupPipe(const unsigned int pipe_x, const unsigned char bottom_sprite_num, const unsigned char top_sprite_num) {
+void setupPipe(const unsigned char bottom_sprite_num, const unsigned char top_sprite_num) {
 	setupSprite(bottom_sprite_num, COLOR_GREEN, BOTTOM_PIPE_SPRITE_DATA);
-	moveSprite(bottom_sprite_num, pipe_x, POS_BOTTOM);
-
 	setupSprite(top_sprite_num, COLOR_GREEN, TOP_PIPE_SPRITE_DATA);
-	moveSprite(top_sprite_num, pipe_x, POS_TOP);
-}
-
-void setupSprites(const unsigned int bird_y, const unsigned int pipe_a_x, const unsigned int pipe_b_x) {
-	setupBirdSprite(bird_y);
-	setupPipe(pipe_a_x, BOTTOM_PIPE_A_SPRITE_NUM, TOP_PIPE_A_SPRITE_NUM);
-	setupPipe(pipe_b_x, BOTTOM_PIPE_B_SPRITE_NUM, TOP_PIPE_B_SPRITE_NUM);
 }
 
 void updateSprites(const unsigned int bird_y, const unsigned int pipe_a_x, const unsigned int pipe_b_x) {
@@ -68,3 +54,11 @@ void updateSprites(const unsigned int bird_y, const unsigned int pipe_a_x, const
 	moveSprite(BOTTOM_PIPE_B_SPRITE_NUM, pipe_b_x, POS_BOTTOM);
 	moveSprite(TOP_PIPE_B_SPRITE_NUM, pipe_b_x, POS_TOP);
 }
+
+void setupSprites(const unsigned int bird_y, const unsigned int pipe_a_x, const unsigned int pipe_b_x) {
+	setupSprite(BIRD_SPRITE_NUM, COLOR_YELLOW, BIRD_SPRITE_DATA);
+	setupPipe(BOTTOM_PIPE_A_SPRITE_NUM, TOP_PIPE_A_SPRITE_NUM);
+	setupPipe(BOTTOM_PIPE_B_SPRITE_NUM, TOP_PIPE_B_SPRITE_NUM);
+	updateSprites(bird_y, pipe_a_x, pipe_b_x);
+}
+
