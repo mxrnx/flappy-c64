@@ -14,6 +14,13 @@ const unsigned char KEY_PRESS_MAX = 60;
 const unsigned char KEY_PRESS_MIN = 20;
 const unsigned int PIPE_MAX_X = 401;
 
+void updatePipe(unsigned int* pipe_x) {
+	if (*pipe_x > 0)
+		--(*pipe_x);
+	else
+		*pipe_x = PIPE_MAX_X;
+}
+
 void game(void) {
 	unsigned char key;
 	unsigned int pipe_a_x = PIPE_MAX_X;
@@ -37,8 +44,6 @@ void game(void) {
 
 		if (kbhit()) {
 			key = cgetc();  // Get the pressed key
-			if (key == 'q' || key == 'Q')
-				break;  // Exit if 'Q' is pressed
 
 			// Flap
 			if (key == ' ' && keyPress < KEY_PRESS_MIN)
@@ -58,16 +63,8 @@ void game(void) {
 			++bird_y;
 		}
 
-		// TODO: refactor
-		if (pipe_a_x > 0)
-			--pipe_a_x;
-		else
-			pipe_a_x = PIPE_MAX_X;
-
-		if (pipe_b_x > 0)
-			--pipe_b_x;
-		else
-			pipe_b_x = PIPE_MAX_X;
+		updatePipe(&pipe_a_x);
+		updatePipe(&pipe_b_x);
 
 		updateSprites(bird_y, pipe_a_x, pipe_b_x);
 
