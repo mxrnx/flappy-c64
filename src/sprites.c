@@ -55,10 +55,9 @@ void updateSprites(const unsigned int bird_y, const unsigned int pipe_a_x, const
 	moveSprite(TOP_PIPE_B_SPRITE_NUM, pipe_b_x, POS_TOP);
 }
 
-void setupSprites(const unsigned int bird_y, const unsigned int pipe_a_x, const unsigned int pipe_b_x) {
+void setupSprites() {
 	setupSprite(BIRD_SPRITE_NUM, COLOR_YELLOW, BIRD_SPRITE_DATA);
 	setupPipe(BOTTOM_PIPE_A_SPRITE_NUM, TOP_PIPE_A_SPRITE_NUM);
 	setupPipe(BOTTOM_PIPE_B_SPRITE_NUM, TOP_PIPE_B_SPRITE_NUM);
-	updateSprites(bird_y, pipe_a_x, pipe_b_x);
 }
 
