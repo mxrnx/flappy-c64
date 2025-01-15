@@ -67,6 +67,10 @@ $(PROGRAM): $(OBJECTS) | $(BIN_DIR)
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
+.PHONY: run
+run: all
+	x64 --virtualdev8 -drive8type 0 -autostartprgmode 1 -autostart bin/flappybird.prg
+
 # Prevent implicit deletion of intermediate assembly files
 .PRECIOUS: $(OBJ_DIR)/%.s
 
