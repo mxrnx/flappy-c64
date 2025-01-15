@@ -1,6 +1,5 @@
 #include <c64.h>
 #include <conio.h>
-#include <peekpoke.h>
 
 #include "common.h"
 #include "sprites.h"
