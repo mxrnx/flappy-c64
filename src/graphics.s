@@ -1,5 +1,10 @@
 .segment "CODE"
 
+.export _setTextColor
+_setTextColor:
+	sta $0286	; text color
+	rts
+
 .export _setFrameColor
 _setFrameColor:
 	sta $D020	; frame color

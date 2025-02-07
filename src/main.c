@@ -1,5 +1,7 @@
 #include <c64.h>
 #include <conio.h>
+#include <stdlib.h>
+#include <peekpoke.h>
 
 #include "common.h"
 #include "sprites.h"
@@ -17,6 +19,7 @@
 
 // graphics.s
 extern void clearScreen(void);
+extern void setTextColor(const unsigned char color);
 extern void setFrameColor(const unsigned char color);
 extern void setBackgroundColor(const unsigned char color);
 
@@ -24,11 +27,20 @@ extern void setBackgroundColor(const unsigned char color);
 extern void setupRasterInterrupt(void);
 volatile unsigned char frames = 0;
 
+char* scoreMemory = (char*)(0x00EE); // is this even safe?
+int score;
+
 void updatePipe(unsigned int* pipe_x) {
+	unsigned int pipe_x_start = *pipe_x;
 	*pipe_x -= PIPE_SPEED;
 
-	if (*pipe_x > PIPE_MAX_X) // Put a limit on overflow
+	if (*pipe_x > PIPE_MAX_X) { // Put a limit on overflow
 		*pipe_x = PIPE_MAX_X;
+	} else if (pipe_x_start >= 150 && *pipe_x <= 150) { // TODO constant
+		score++;
+		itoa(score, scoreMemory, 10);
+		cputsxy(0, 0, scoreMemory);
+	}
 }
 
 void game(void) {
@@ -42,10 +54,14 @@ void game(void) {
 
 	unsigned char lastUpdate = 0;
 
+	cputsxy(0, 0, "       ");
+	score = 0;
+
 	// Start frame timer
 	setupRasterInterrupt();
 
 	// Prepare game area
+	setTextColor(COLOR_WHITE);
 	setFrameColor(COLOR_ORANGE);
 	setBackgroundColor(COLOR_LIGHTBLUE);
 	updateSprites(bird_y, pipe_a_x, pipe_b_x);
@@ -54,7 +70,10 @@ void game(void) {
 	while (1)
 	{
 		// Handle inputs //
-		if (kbhit() && cgetc() == ' ' && flyTimeLeft < FLY_AGAIN_THRESHOLD)
+		/*if (kbhit() && cgetc() == ' ' && flyTimeLeft < FLY_AGAIN_THRESHOLD)
+			flyTimeLeft = FLY_DURATION;*/
+
+		if ((PEEK(56321) & 16) == 0  && flyTimeLeft < FLY_AGAIN_THRESHOLD)
 			flyTimeLeft = FLY_DURATION;
 
 		// Update game logic //

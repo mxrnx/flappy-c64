@@ -1,5 +1,6 @@
 obj/
 bin/
 *~
+*.swp
 **/*.o
 **/.DS_Store
