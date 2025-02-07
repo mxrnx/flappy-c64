@@ -6,18 +6,28 @@
 
 #define BIRD_HEIGHT 11
 
+#define FLY_SPEED 6
+#define FLY_DURATION 10
+#define FLY_AGAIN_THRESHOLD 4
+
+#define FALL_SPEED 3
+#define PIPE_SPEED 6
+
+#define PIPE_MAX_X 401
+
+// graphics.s
 extern void clearScreen(void);
 extern void setFrameColor(const unsigned char color);
 extern void setBackgroundColor(const unsigned char color);
 
-const unsigned char KEY_PRESS_MAX = 60;
-const unsigned char KEY_PRESS_MIN = 20;
-const unsigned int PIPE_MAX_X = 401;
+// frames.s
+extern void setupRasterInterrupt(void);
+volatile unsigned char frames = 0;
 
 void updatePipe(unsigned int* pipe_x) {
-	if (*pipe_x > 1)
-		--(*pipe_x);
-	else
+	*pipe_x -= PIPE_SPEED;
+
+	if (*pipe_x > PIPE_MAX_X) // Put a limit on overflow
 		*pipe_x = PIPE_MAX_X;
 }
 
@@ -28,8 +38,12 @@ void game(void) {
 	unsigned int pipe_b_x = PIPE_MAX_X - 200;
 	unsigned int bird_y = 100;
 
-	unsigned char frames = 0;
-	unsigned char keyPress = 0;
+	unsigned char flyTimeLeft = 0;
+
+	unsigned char lastUpdate = 0;
+
+	// Start frame timer
+	setupRasterInterrupt();
 
 	// Prepare game area
 	setFrameColor(COLOR_ORANGE);
@@ -39,27 +53,29 @@ void game(void) {
 	// Main game loop
 	while (1)
 	{
-		++frames;
+		// Handle inputs //
+		if (kbhit() && cgetc() == ' ' && flyTimeLeft < FLY_AGAIN_THRESHOLD)
+			flyTimeLeft = FLY_DURATION;
 
-		if (kbhit() && cgetc() == ' ' && keyPress < KEY_PRESS_MIN)
-			keyPress = KEY_PRESS_MAX;
-
-		if (keyPress > 0) {
-			if (frames % 2 == 0)
-			{
-				--bird_y;
-				--keyPress;
+		// Update game logic //
+		if ((unsigned char)(frames - lastUpdate) > 0) {
+			if (flyTimeLeft > 0) {
+				bird_y -= FLY_SPEED;
+				--flyTimeLeft;
+			} else {
+				bird_y += FALL_SPEED;
 			}
-		} else if (frames % 3 == 0) {
-			++bird_y;
+
+			updatePipe(&pipe_a_x);
+			updatePipe(&pipe_b_x);
+
+			lastUpdate = frames;
 		}
 
-		updatePipe(&pipe_a_x);
-		updatePipe(&pipe_b_x);
-
+		// Draw //
 		updateSprites(bird_y, pipe_a_x, pipe_b_x);
 
- 		// If spr_coll's 0 bit is set, there is a collision with the bird
+		// If spr_coll's 0 bit is set, there is a collision with the bird
 		if (bird_y - BIRD_HEIGHT > POS_BOTTOM || bird_y < POS_TOP || (VIC.spr_coll % 2) == 1)
 			break;
 	}
