@@ -1,16 +1,15 @@
 #include <c64.h>
 #include <conio.h>
-#include <stdlib.h>
-#include <peekpoke.h>
 
 #include "common.h"
 #include "sprites.h"
+#include "score.h"
 
 #define BIRD_HEIGHT 11
 
-#define FLY_SPEED 6
+#define FLY_SPEED 9
 #define FLY_DURATION 10
-#define FLY_AGAIN_THRESHOLD 4
+#define FLY_AGAIN_THRESHOLD 8
 
 #define FALL_SPEED 3
 #define PIPE_SPEED 6
@@ -27,8 +26,8 @@ extern void setBackgroundColor(const unsigned char color);
 extern void setupRasterInterrupt(void);
 volatile unsigned char frames = 0;
 
-char* scoreMemory = (char*)(0x00EE); // is this even safe?
-int score;
+// input.s
+extern unsigned char isSpaceOrShootDown(void);
 
 void updatePipe(unsigned int* pipe_x) {
 	unsigned int pipe_x_start = *pipe_x;
@@ -36,16 +35,18 @@ void updatePipe(unsigned int* pipe_x) {
 
 	if (*pipe_x > PIPE_MAX_X) { // Put a limit on overflow
 		*pipe_x = PIPE_MAX_X;
-	} else if (pipe_x_start >= 150 && *pipe_x <= 150) { // TODO constant
-		score++;
-		itoa(score, scoreMemory, 10);
-		cputsxy(0, 0, scoreMemory);
+	} else if (pipe_x_start >= POS_BIRD && *pipe_x <= POS_BIRD) {
+		increaseAndDrawScore();
 	}
 }
 
-void game(void) {
-	unsigned char key;
+void waitForKey(unsigned char key) {
+	asm("lda #0");
+	asm("sta $C6");
+	while(cgetc() != key) {}
+}
 
+void game(void) {
 	unsigned int pipe_a_x = PIPE_MAX_X;
 	unsigned int pipe_b_x = PIPE_MAX_X - 200;
 	unsigned int bird_y = 100;
@@ -54,14 +55,9 @@ void game(void) {
 
 	unsigned char lastUpdate = 0;
 
-	cputsxy(0, 0, "       ");
-	score = 0;
-
-	// Start frame timer
-	setupRasterInterrupt();
-
 	// Prepare game area
-	setTextColor(COLOR_WHITE);
+	resetScore();
+	VIC.spr_coll = 0;
 	setFrameColor(COLOR_ORANGE);
 	setBackgroundColor(COLOR_LIGHTBLUE);
 	updateSprites(bird_y, pipe_a_x, pipe_b_x);
@@ -69,21 +65,9 @@ void game(void) {
 	// Main game loop
 	while (1)
 	{
-		// Handle inputs //
-		/*if (kbhit() && cgetc() == ' ' && flyTimeLeft < FLY_AGAIN_THRESHOLD)
-			flyTimeLeft = FLY_DURATION;*/
-
-		if ((PEEK(56321) & 16) == 0  && flyTimeLeft < FLY_AGAIN_THRESHOLD)
-			flyTimeLeft = FLY_DURATION;
-
-		// Update game logic //
+		// Game logic //
 		if ((unsigned char)(frames - lastUpdate) > 0) {
-			if (flyTimeLeft > 0) {
-				bird_y -= FLY_SPEED;
-				--flyTimeLeft;
-			} else {
-				bird_y += FALL_SPEED;
-			}
+			bird_y += isSpaceOrShootDown() ? -FLY_SPEED : FALL_SPEED;
 
 			updatePipe(&pipe_a_x);
 			updatePipe(&pipe_b_x);
@@ -102,11 +86,17 @@ void game(void) {
 	setFrameColor(COLOR_BLACK);
 	setBackgroundColor(COLOR_RED);
 
-	key = cgetc(); // Wait for user to press a key
+	cputsxy(9, 12, "Press 'enter' to start");
+	waitForKey(13); // 13 = Return
+	cputsxy(9, 12, "                      ");
 }
 
 void main(void) {
 	clearScreen();
+	setTextColor(COLOR_WHITE);
+
+	// Start frame timer
+	setupRasterInterrupt();
 
 	// Setup sprites
 	setupSprites();

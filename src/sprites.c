@@ -5,8 +5,6 @@
 #include "common.h"
 #include "sprite_data.h"
 
-const unsigned int BIRD_X = 150;
-
 const unsigned char BIRD_SPRITE_NUM = 0;
 const unsigned char BOTTOM_PIPE_A_SPRITE_NUM = 1;
 const unsigned char TOP_PIPE_A_SPRITE_NUM = 2;
@@ -48,7 +46,7 @@ void setupPipe(const unsigned char bottom_sprite_num, const unsigned char top_sp
 }
 
 void updateSprites(const unsigned int bird_y, const unsigned int pipe_a_x, const unsigned int pipe_b_x) {
-	moveSprite(BIRD_SPRITE_NUM, BIRD_X, bird_y);
+	moveSprite(BIRD_SPRITE_NUM, POS_BIRD, bird_y);
 	moveSprite(BOTTOM_PIPE_A_SPRITE_NUM, pipe_a_x, POS_BOTTOM);
 	moveSprite(TOP_PIPE_A_SPRITE_NUM, pipe_a_x, POS_TOP);
 	moveSprite(BOTTOM_PIPE_B_SPRITE_NUM, pipe_b_x, POS_BOTTOM);
